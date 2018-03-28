@@ -20,7 +20,7 @@ Note: so far only tested on Minikube v0.24 with Kubernetes v1.8.
 
 ## Prerequisites 
 
-First, clone this repo with `git clone https://github.com/mhausenblas/kruiser.git && cd kruiser`.
+First, clone this repository with `git clone https://github.com/mhausenblas/kruiser.git && cd kruiser`.
 
 It's considered a good practice to create namespaces for related apps rather than dumping all into the `default` namespace.
 And indeed, the usage instructions throughout assume you've created a namespace `kruiser`, for example, like so:
@@ -68,7 +68,7 @@ $ kubectl -n kruiser run -it --rm gumpod --restart=Never --image=quay.io/mhausen
 /go $ grpcurl --plaintext kruiser:8080 yages.Echo.Ping
 ```
 
-Option 1: Assuming you're using Minikube and you have `grpcurl` installed locally, you can access the gRPC service from outside the cluster as shown here:
+Option 2: Assuming you're using Minikube and you have `grpcurl` installed locally, you can access the gRPC service from outside the cluster as shown here:
 
 ```bash
 $ grpcurl --plaintext $(minikube ip):32123 yages.Echo.Ping
@@ -91,7 +91,7 @@ $ kubectl -n kruiser apply -f static/sidecar-kruiser.yaml
 Clean up with:
 
 ```bash
-$ kubectl -n kruiser delete all -l=app=kruiser
+$ kubectl -n kruiser delete all,cm -l=app=kruiser
 ```
 
 ### Invoke
