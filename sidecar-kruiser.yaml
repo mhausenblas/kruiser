@@ -23,7 +23,7 @@ data:
           error_log /dev/stderr warn;
 
           location / {
-           grpc_pass grpc://yages:9000;
+           grpc_pass grpc://127.0.0.1:9000;
           }
         }
     }
@@ -42,6 +42,11 @@ spec:
         app: kruiser
     spec:
       containers:
+      - name: yages
+        image: quay.io/mhausenblas/yages:0.1.0
+        ports:
+        - name: grpc
+          containerPort: 9000
       - name: proxy
         image: nginx:1.13.10-alpine
         command:
@@ -72,8 +77,10 @@ spec:
   type: NodePort
   ports:
   - name: proxy
-    nodePort: 32123
     port: 8080
     targetPort: 8080
+  - name: grpc
+    port: 9000
+    targetPort: 9000
   selector:
     app: kruiser
