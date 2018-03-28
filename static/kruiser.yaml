@@ -7,25 +7,15 @@ metadata:
     app: kruiser
 data:
   config: | 
-    daemon off;
+    server {
+      listen 8080 http2;
+      
+      access_log /dev/stdout;
+      error_log /dev/stderr warn;
 
-    events {}
-
-    http {
-        log_format  main  '$remote_addr - $remote_user [$time_local] "$request"'
-                          '$status $body_bytes_sent "$http_referer" '
-                          '"$http_user_agent"';
-
-        server {
-          listen 8080 http2;
-    
-          access_log /dev/stdout;
-          error_log /dev/stderr warn;
-
-          location / {
-           grpc_pass grpc://yages:9000;
-          }
-        }
+      location / {
+        grpc_pass grpc://yages:9000;
+      }
     }
 ---
 apiVersion: apps/v1beta1
@@ -44,23 +34,23 @@ spec:
       containers:
       - name: proxy
         image: nginx:1.13.10-alpine
-        command:
-        - "nginx"
-        - "-c"
-        - "/etc/nginx/nginx.conf"
+        # command:
+        # - "nginx"
+        # - "-c"
+        # - "/etc/nginx/nginx.conf"
         ports:
         - name: proxy
           containerPort: 8080
         volumeMounts:
         - name: proxyconf
-          mountPath: /etc/nginx
+          mountPath: /etc/nginx/conf.d
       volumes:
         - name: proxyconf
           configMap:
              name: nginxconf
              items:
               - key: config
-                path: nginx.conf
+                path: grpc-proxy.conf
 ---
 apiVersion: v1
 kind: Service

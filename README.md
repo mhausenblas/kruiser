@@ -55,7 +55,7 @@ When done, clean up with:
 
 ```
 $ kubectl -n kruiser delete all -l=app=yages
-$ kubectl -n kruiser delete all -l=app=kruiser
+$ kubectl -n kruiser delete all,cm -l=app=kruiser
 ```
 
 ### Invoke
@@ -77,6 +77,8 @@ $ grpcurl --plaintext $(minikube ip):32123 yages.Echo.Ping
 ## gRPC service with NGINX proxy sidecar
 
 You can use [static/sidecar-kruise.yaml](static/yages.yaml) as a static boilerplate as described in the following.
+
+Note that in addition to NGINX being deployed as a sidecar, the config is also different. Here, `/etc/nginx/nginx.conf` is directly overridden, in contrast to the standalone case where a new config file `/etc/nginx/conf.d/grpc-proxy.conf` is added. 
 
 ### Setup
 
