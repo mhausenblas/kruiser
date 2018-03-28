@@ -76,7 +76,7 @@ spec:
   type: ClusterIP
   ports:
   - name: proxy
-    port: 80
+    port: 8080
     targetPort: 80
   - name: grpc
     port: 9000
