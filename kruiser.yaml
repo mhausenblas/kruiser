@@ -19,7 +19,8 @@ data:
         server {
           listen 8080 http2;
     
-          access_log /tmp/grpc.log;
+          access_log /dev/stdout;
+          error_log /dev/stderr warn;
 
           location / {
            grpc_pass grpc://127.0.0.1:9000;
@@ -77,7 +78,7 @@ spec:
   ports:
   - name: proxy
     port: 8080
-    targetPort: 80
+    targetPort: 8080
   - name: grpc
     port: 9000
     targetPort: 9000
