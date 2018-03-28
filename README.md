@@ -10,9 +10,11 @@ Create namespace:
 $ kubectl create namespace kruiser
 ```
 
-## gRPC proxy
+## gRPC service with NGINX sidecar
 
-Deploy proxy with:
+The gRPC test service is [mhausenblas/yages](https://github.com/mhausenblas/yages), using [NGINX 1.13.10](https://www.nginx.com/blog/nginx-1-13-10-grpc/) as a sidecar. 
+
+Deploy gRPC service + sidecar proxy with:
 
 ```
 $ kubectl -n kruiser apply -f kruiser.yaml
