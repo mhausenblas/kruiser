@@ -20,15 +20,14 @@ Note: so far only tested on Minikube v0.24 with Kubernetes v1.8.
 
 ## Prerequisites 
 
-Below assumes you've created a namespace `kruiser`, for example like so:
+Below sections assume you've created a namespace `kruiser`, for example like so:
 
 ```bash
 $ kubectl create namespace kruiser
 ```
 
-The gRPC demo service used throughout here is [mhausenblas/yages](https://github.com/mhausenblas/yages), a simple echo service.
-
-As a generic gRPC client, we use [fullstorydev/grpcurl](https://github.com/fullstorydev/grpcurl) here 
+The gRPC demo service used throughout here is a simple echo service: [mhausenblas/yages](https://github.com/mhausenblas/yages). 
+As a generic gRPC client we use [fullstorydev/grpcurl](https://github.com/fullstorydev/grpcurl) here 
 which you can either install locally (if you have Go) or as a container using [quay.io/mhausenblas/gump:0.1](https://quay.io/repository/mhausenblas/gump?tag=0.1&tab=tags).
 
 ## gRPC service and standalone NGINX proxy
@@ -56,7 +55,7 @@ $ kubectl -n kruiser delete all -l=app=kruiser
 
 ### Invoke
 
-Launch a gRPC enabled jump pod and access the gRPC service via the NGINX proxy:
+Option 1: Launch a gRPC enabled jump pod and access the gRPC service via the NGINX proxy from within the cluster:
 
 ```bash
 $ kubectl -n kruiser run -it --rm gumpod --restart=Never --image=quay.io/mhausenblas/gump:0.1
@@ -64,7 +63,7 @@ $ kubectl -n kruiser run -it --rm gumpod --restart=Never --image=quay.io/mhausen
 /go $ grpcurl --plaintext kruiser:8080 yages.Echo.Ping
 ```
 
-When using Minikube, you can access the gRPC service from outside of the cluster:
+Option 1: Assuming you're using Minikube and you have `grpcurl` installed locally, you can access the gRPC service from outside the cluster as shown here:
 
 ```bash
 $ grpcurl --plaintext $(minikube ip):32123 yages.Echo.Ping
@@ -94,13 +93,13 @@ Launch a gRPC enabled jump pod:
 $ kubectl -n kruiser run -it --rm gumpod --restart=Never --image=quay.io/mhausenblas/gump:0.1
 ```
 
-Directly accessing the gRPC service:
+Now you can directly access the gRPC service from within the cluster:
 
 ```bash
 /go $ grpcurl --plaintext kruiser:9000 yages.Echo.Ping
 ```
 
-Accessing the gRPC service via NGINX proxy:
+Accessing the gRPC service via NGINX proxy from within the cluster looks like this:
 
 ```bash
 /go $ grpcurl --plaintext kruiser:8080 yages.Echo.Ping
@@ -108,7 +107,7 @@ Accessing the gRPC service via NGINX proxy:
 
 ## Manual set up of NGINX
 
-To configure NGINX manually, exec into the pod (assuming below here that the `kruiser` pod is `kruiser-856686799d-j792v`) and use container `proxy`:
+To toy around and try new things, configure NGINX manually. For that exec into the pod (assuming below here that the `kruiser` pod is `kruiser-856686799d-j792v`) and use container `proxy`:
 
 ```bash
 $ kubectl -n kruiser exec -it -c proxy kruiser-856686799d-j792v -- sh
