@@ -32,6 +32,8 @@ which you can either install locally (if you have Go) or as a container using [q
 
 ## gRPC service and standalone NGINX proxy
 
+You can use [static/yages.yaml](static/yages.yaml) and [static/kruiser.yaml](static/kruiser.yaml) as a static boilerplate as described in the following.
+
 ### Setup
 
 Deploy the demo gRPC service with:
@@ -70,6 +72,8 @@ $ grpcurl --plaintext $(minikube ip):32123 yages.Echo.Ping
 ```
 
 ## gRPC service with NGINX proxy sidecar
+
+You can use [static/sidecar-kruise.yaml](static/yages.yaml) as a static boilerplate as described in the following.
 
 ### Setup
 
