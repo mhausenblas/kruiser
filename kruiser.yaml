@@ -19,7 +19,7 @@ data:
         server {
           listen 8080 http2;
     
-          access_log grpc.log;
+          access_log /tmp/grpc.log;
 
           location / {
            grpc_pass grpc://127.0.0.1:9000;
@@ -73,7 +73,7 @@ metadata:
   labels:
     app: kruiser
 spec:
-  type: ClusterIP
+  type: NodePort
   ports:
   - name: proxy
     port: 8080
