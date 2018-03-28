@@ -20,7 +20,10 @@ Note: so far only tested on Minikube v0.24 with Kubernetes v1.8.
 
 ## Prerequisites 
 
-Below sections assume you've created a namespace `kruiser`, for example like so:
+First, clone this repo with `git clone https://github.com/mhausenblas/kruiser.git && cd kruiser`.
+
+It's considered a good practice to create namespaces for related apps rather than dumping all into the `default` namespace.
+And indeed, the usage instructions throughout assume you've created a namespace `kruiser`, for example, like so:
 
 ```bash
 $ kubectl create namespace kruiser
@@ -39,13 +42,13 @@ You can use [static/yages.yaml](static/yages.yaml) and [static/kruiser.yaml](sta
 Deploy the demo gRPC service with:
 
 ```bash
-$ kubectl -n kruiser apply -f yages.yaml
+$ kubectl -n kruiser apply -f static/yages.yaml
 ```
 
 Deploy the NGINX proxy with:
 
 ```
-$ kubectl -n kruiser apply -f kruiser.yaml
+$ kubectl -n kruiser apply -f static/kruiser.yaml
 ```
 
 When done, clean up with:
@@ -80,7 +83,7 @@ You can use [static/sidecar-kruise.yaml](static/yages.yaml) as a static boilerpl
 Deploy gRPC service + sidecar proxy with:
 
 ```bash
-$ kubectl -n kruiser apply -f sidecar-kruiser.yaml
+$ kubectl -n kruiser apply -f static/sidecar-kruiser.yaml
 ```
 
 Clean up with:
