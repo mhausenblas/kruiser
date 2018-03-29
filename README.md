@@ -9,6 +9,7 @@ watches services labelled with `grpc=expose` and proxies them to the public usin
 
 Note: so far only tested on Minikube v0.24 with Kubernetes v1.8.
 
+- [Use cases](#use-cases)
 - [Prerequisites](#prerequisites)
 - [gRPC service and standalone NGINX proxy](#grpc-service-and-standalone-nginx-proxy)
     - [Setup](#setup)
@@ -17,6 +18,15 @@ Note: so far only tested on Minikube v0.24 with Kubernetes v1.8.
     - [Setup](#setup-1)
     - [Invoke](#invoke-1)
 - [Manual set up of NGINX](#manual-set-up-of-nginx)
+
+## Use cases
+
+There are two
+
+### UC1: inter-cluster within the enterprise
+
+### UC2: public services
+
 
 ## Prerequisites 
 
@@ -42,7 +52,7 @@ You can use [static/yages.yaml](static/yages.yaml) and [static/kruiser.yaml](sta
 Deploy the demo gRPC service with:
 
 ```bash
-$ kubectl -n kruiser apply -f static/yages.yaml
+$ kubectl -n kruiser apply -f static/ping.yaml
 ```
 
 Deploy the NGINX proxy with:
@@ -76,7 +86,7 @@ $ grpcurl --plaintext $(minikube ip):32123 yages.Echo.Ping
 
 ## gRPC service with NGINX proxy sidecar
 
-You can use [static/sidecar-kruise.yaml](static/yages.yaml) as a static boilerplate as described in the following.
+You can use [static/sidecar-kruise.yaml](static/sidecar-kruise.yaml) as a static boilerplate as described in the following.
 
 Note that in addition to NGINX being deployed as a sidecar, the config is also different. Here, `/etc/nginx/nginx.conf` is directly overridden, in contrast to the standalone case where a new config file `/etc/nginx/conf.d/grpc-proxy.conf` is added. 
 

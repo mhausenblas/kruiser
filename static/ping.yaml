@@ -3,16 +3,16 @@ kind: Deployment
 metadata:
   labels:
     app: yages
-  name: yages
+  name: ping
 spec:
   replicas: 1
   template:
     metadata:
       labels:
-        app: yages
+        app: ping
     spec:
       containers:
-      - name: grpcsrv
+      - name: ping
         image: quay.io/mhausenblas/yages:0.1.0
         ports:
         - containerPort: 9000
@@ -23,13 +23,11 @@ kind: Service
 metadata:
   labels:
     app: yages
-  name: yages
+  name: ping
 spec:
   type: ClusterIP
   ports:
-  - name: http
-    port: 9000
-    protocol: TCP
+  - port: 9000
     targetPort: 9000
   selector:
-    app: yages
+    app: ping
