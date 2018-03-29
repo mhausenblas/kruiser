@@ -2,7 +2,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: ping
+  name: nginxconf
   labels:
     app: kruiser
 data:
@@ -13,8 +13,13 @@ data:
       access_log /dev/stdout;
       error_log /dev/stderr warn;
 
-      location /yages.Echo {
+      location /ping {
         grpc_pass grpc://ping:9000;
+      }
+ 
+      location / {
+        root html;
+        index index.html index.htm;
       }
     } 
 ---
@@ -43,7 +48,7 @@ spec:
       volumes:
         - name: proxyconf
           configMap:
-             name: ping
+             name: nginxconf
              items:
               - key: config
                 path: grpc-proxy.conf
