@@ -13,7 +13,7 @@ data:
       access_log /dev/stdout;
       error_log /dev/stderr warn;
 
-      location /ping {
+      location /yages.Echo {
         grpc_pass grpc://ping:9000;
       }
     } 
