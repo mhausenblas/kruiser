@@ -52,37 +52,45 @@ func createProxies(svcs []string) error {
 		Name string
 		Port string
 	}
-	s := gRPCService{"ping", "9000"}
+	// 1. create a location per service
+	servert := `|
+	server {
+	  listen 8080 http2;
 
-	// create a location in NGINX conf per service
-	// servert := `|
-	// server {
-	//   listen 8080 http2;
+	  access_log /dev/stdout;
+	  error_log /dev/stderr warn;
 
-	//   access_log /dev/stdout;
-	//   error_log /dev/stderr warn;
-
-	//   _LOCATIONS_
-	// }
-	// `
-	tmpl, err := template.New("service").Parse(`
-	location /{{.Name}} {
-        grpc_pass grpc://{{.Name}}:{{.Port}};
-    }
-    `)
-	if err != nil {
-		return err
+	  _LOCATIONS_
 	}
-	buf := bytes.NewBufferString("")
-	err = tmpl.Execute(buf, s)
-	if err != nil {
-		return err
-	}
-	fmt.Println(buf.String())
+	`
+	locations := bytes.NewBufferString("")
 
-	// create a ConfigMap nginxconf
-	// kubectl "--namespace=kruiser" create configmap nginxconf --from-literal=config=TEMPLATE
-	// re-deploy kruiser with new ConfigMap
+	for _, svc := range svcs {
+		s := gRPCService{svc, "9000"}
+		tmpl, err := template.New("service").Parse(`
+			location /{{.Name}} {
+        		grpc_pass grpc://{{.Name}}:{{.Port}};
+    		}
+    	`)
+		if err != nil {
+			return err
+		}
+
+		err = tmpl.Execute(locations, s)
+		if err != nil {
+			return err
+		}
+	}
+
+	servert = strings.Replace(servert, "_LOCATIONS_", locations.String(), -1)
+
+	// 2. create a ConfigMap nginxconf
+	//
+	// todo: write to tmp file and use --from-file=path/to/bar
+	fmt.Println(strings.Replace("kubectl --namespace=kruiser create configmap nginxconf --from-literal=config=_SERVERTEMPLATE_",
+		"_SERVERTEMPLATE_", servert, -1))
+
+	// 3. re-deploy kruiser with ConfigMap
 	return nil
 }
 
