@@ -9,15 +9,7 @@ watches services labelled with `grpc=expose` and proxies them to the public usin
 
 Note: so far only tested on Minikube v0.24 with Kubernetes v1.8.
 
-- [Use cases](#use-cases)
-- [Prerequisites](#prerequisites)
-- [gRPC service and standalone NGINX proxy](#grpc-service-and-standalone-nginx-proxy)
-    - [Setup](#setup)
-    - [Invoke](#invoke)
-- [gRPC service with NGINX proxy sidecar](#grpc-service-with-nginx-proxy-sidecar)
-    - [Setup](#setup-1)
-    - [Invoke](#invoke-1)
-- [Manual set up of NGINX](#manual-set-up-of-nginx)
+
 
 ## Use cases
 
@@ -27,6 +19,9 @@ There are two
 
 ### UC2: public services
 
+## Usage
+
+Either automatic or static
 
 ## Prerequisites 
 

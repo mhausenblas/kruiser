@@ -1,8 +1,11 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
+	"html/template"
 	"os"
+	"strings"
 	"time"
 )
 
@@ -31,23 +34,68 @@ func init() {
 func main() {
 	fmt.Printf("This is kruiser watching namespace %v for gRPC services to publish\n", targetns)
 	for {
-		svcs, err := findSvc(targetns, targetlabel)
+		svcs, err := findServices(targetns, targetlabel)
 		if err != nil {
-			fmt.Errorf("Can't list services in namespace %v", targetns)
+			fmt.Errorf("Can't list services in namespace %v due to %v\n", targetns, err)
 		}
-		fmt.Println(svcs)
+		fmt.Printf("Found gRPC services %v\n", svcs)
+		err = createProxies(svcs)
+		if err != nil {
+			fmt.Errorf("Can't create proxies due to %v\n", err)
+		}
 		time.Sleep(wdelay)
 	}
 }
 
-func findSvc(namespace, label string) (string, error) {
+func createProxies(svcs []string) error {
+	type gRPCService struct {
+		Name string
+		Port string
+	}
+	s := gRPCService{"ping", "9000"}
+
+	// create a location in NGINX conf per service
+	// servert := `|
+	// server {
+	//   listen 8080 http2;
+
+	//   access_log /dev/stdout;
+	//   error_log /dev/stderr warn;
+
+	//   _LOCATIONS_
+	// }
+	// `
+	tmpl, err := template.New("service").Parse(`
+	location /{{.Name}} {
+        grpc_pass grpc://{{.Name}}:{{.Port}};
+    }
+    `)
+	if err != nil {
+		return err
+	}
+	buf := bytes.NewBufferString("")
+	err = tmpl.Execute(buf, s)
+	if err != nil {
+		return err
+	}
+	fmt.Println(buf.String())
+
+	// create a ConfigMap nginxconf
+	// kubectl "--namespace=kruiser" create configmap nginxconf --from-literal=config=TEMPLATE
+	// re-deploy kruiser with new ConfigMap
+	return nil
+}
+
+func findServices(namespace, label string) ([]string, error) {
+	var res []string
 	svcs, err := kubectl(true, "get",
 		"--namespace="+namespace, "svc",
 		"--selector="+label,
 		"-o=custom-columns=:metadata.name",
 		"--no-headers")
 	if err != nil {
-		return svcs, err
+		return res, err
 	}
-	return svcs, nil
+	res = strings.Split(svcs, "\n")
+	return res, nil
 }
