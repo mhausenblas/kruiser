@@ -4,6 +4,7 @@ import (
 	"context"
 	"flag"
 	"log"
+	"time"
 
 	"github.com/mhausenblas/yages/yages"
 	"google.golang.org/grpc"
@@ -19,9 +20,11 @@ func main() {
 	defer conn.Close()
 
 	c := yages.NewEchoClient(conn)
-	res, err := c.Ping(context.Background(), &yages.Empty{})
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	res, err := c.Ping(ctx, &yages.Empty{})
 	if err != nil {
 		log.Fatal(err)
 	}
+	cancel()
 	log.Println(res.Text)
 }
