@@ -39,6 +39,8 @@ The gRPC demo service used throughout here is a simple echo service: [mhausenbla
 As a generic gRPC client we use [fullstorydev/grpcurl](https://github.com/fullstorydev/grpcurl) here 
 which you can either install locally (if you have Go) or as a container using [quay.io/mhausenblas/gump:0.1](https://quay.io/repository/mhausenblas/gump?tag=0.1&tab=tags).
 
+If you're interested in how `kruiser` works or want to extend it, check out the [how does it work](how-does-it-work.md) notes.
+
 ## Use
 
 TBD.

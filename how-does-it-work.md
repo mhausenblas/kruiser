@@ -28,7 +28,7 @@ which you can either install locally (if you have Go installed) or as a containe
 
 ## gRPC service and standalone NGINX proxy
 
-You can use [static/yages.yaml](static/yages.yaml) and [static/kruiser.yaml](static/kruiser.yaml) as a static boilerplate as described in the following.
+You can use [static/ping.yaml](static/ping.yaml) (representing your gRPC service you want to expose) and [static/kruiser.yaml](static/kruiser.yaml) as a static boilerplate as described in the following.
 
 ### Setup
 
