@@ -1,0 +1,33 @@
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  labels:
+    app: gs
+  name: gs
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: gs
+    spec:
+      containers:
+      - name: ping
+        image: quay.io/mhausenblas/grpc-gs:0.2
+        ports:
+        - containerPort: 50051
+          protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: gs
+  name: gs
+spec:
+  type: ClusterIP
+  ports:
+  - port: 9001
+    targetPort: 50051
+  selector:
+    app: gs

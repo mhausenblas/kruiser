@@ -13,12 +13,12 @@ data:
       access_log /dev/stdout;
       error_log /dev/stderr warn;
 
-      location / {
+      location /yages.Echo {
         grpc_pass grpc://ping:9000;
       }
 
-      location /yages.Echo {
-        grpc_pass grpc://ping:9000;
+      location /helloworld.Greeter {
+        grpc_pass grpc://gs:9001;
       }
     } 
 ---
