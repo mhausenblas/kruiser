@@ -8,18 +8,13 @@ metadata:
 data:
   config: | 
     server {
-      listen 8080 http2;
+      listen *:8080 http2;
       
       access_log /dev/stdout;
       error_log /dev/stderr warn;
 
-      location /ping {
+      location /yages.Echo {
         grpc_pass grpc://ping:9000;
-      }
- 
-      location / {
-        root html;
-        index index.html index.htm;
       }
     } 
 ---

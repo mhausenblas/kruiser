@@ -43,4 +43,27 @@ If you're interested in how `kruiser` works or want to extend it, check out the 
 
 ## Use
 
-TBD.
+Deploy the demo gRPC service with:
+
+```bash
+$ kubectl -n kruiser apply -f static/ping.yaml
+```
+
+Deploy the NGINX proxy with:
+
+```bash
+$ kubectl -n kruiser apply -f static/kruiser.yaml
+```
+
+Invoke it like so, for example:
+
+```bash
+$ grpcurl --plaintext kruiser:8080 yages.Echo.Ping
+```
+
+When done, clean up with:
+
+```
+$ kubectl -n kruiser delete all -l=app=yages
+$ kubectl -n kruiser delete all,cm -l=app=kruiser
+```
