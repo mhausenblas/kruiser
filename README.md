@@ -43,10 +43,10 @@ If you're interested in how `kruiser` works or want to extend it, check out the 
 
 ## Use
 
-Deploy the demo gRPC service with:
+Deploy the demo gRPC services with:
 
 ```bash
-$ kubectl -n kruiser apply -f static/ping.yaml
+$ kubectl -n kruiser apply -f static/ping.yaml,static/gs.yaml
 ```
 
 Deploy the NGINX proxy with:
