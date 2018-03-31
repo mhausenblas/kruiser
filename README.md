@@ -2,13 +2,12 @@
 
 A proxy that transparently exposes gRPC Kubernetes services cluster-externally.
 
-Using [NGINX 1.13.10](https://www.nginx.com/blog/nginx-1-13-10-grpc/) as a proxy, `kruiser` 
+Using back-ends such as [NGINX 1.13.10](https://www.nginx.com/blog/nginx-1-13-10-grpc/) or [Ambassador](https://www.getambassador.io/) as proxies, `kruiser` 
 watches services labelled with `grpc=expose` and proxies them to the public using a service of type NodePort on port `32123`.
 
 ![architecture](img/kruiser-arch.png)
 
-Note: so far only tested on Minikube v0.24 with Kubernetes v1.8.
-
+Note: so far tested on Minikube v0.24 and v0.25 with Kubernetes v1.8 and v1.9.
 
 - [Use cases](#use-cases)
     - [UC1: inter-cluster within the enterprise](#uc1-inter-cluster-within-the-enterprise)
