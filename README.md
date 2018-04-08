@@ -45,7 +45,7 @@ $ kubectl create namespace kruiser
 
 ### Example gRPC demo services
 
-The two example gRPC [demo services/](demo-services/) used below here are:
+The two example gRPC [demo services](demo-services/) used below are:
 
 - A simple echo service [yages.Echo](https://github.com/mhausenblas/yages/blob/master/main.go) available via `quay.io/mhausenblas/yages:0.1.0`
 - The reference [helloworld.Greeter](https://github.com/grpc/grpc-go/blob/master/examples/helloworld/greeter_server/main.go) available via `quay.io/mhausenblas/grpc-gs:0.2`
