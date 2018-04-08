@@ -38,17 +38,16 @@ func main() {
 		if err != nil {
 			fmt.Errorf("Can't list deployments in namespace %v due to %v\n", targetns, err)
 		}
-		fmt.Printf("deployments: %v deployments length: %d\n", deploys, len(deploys))
-		// switch {
-		// case len(deploys) == 0:
-		// 	fmt.Printf("Didn't find any deployments to proxy\n")
-		// default:
-		// 	fmt.Printf("Found deployments %v to create gRPC proxies for\n", deploys)
-		// 	err = proxy(targetns, deploys)
-		// 	if err != nil {
-		// 		fmt.Errorf("Can't create gRPC proxies due to %v\n", err)
-		// 	}
-		// }
+		switch {
+		case deploys[0] == "":
+			fmt.Printf("Didn't find any deployments to proxy\n")
+		default:
+			fmt.Printf("Found deployments %v to create gRPC proxies for\n", deploys)
+			err = proxy(targetns, deploys)
+			if err != nil {
+				fmt.Errorf("Can't create gRPC proxies due to %v\n", err)
+			}
+		}
 		time.Sleep(wdelay)
 	}
 }
@@ -59,16 +58,18 @@ func main() {
 func proxy(namespace string, deploys []string) error {
 	// 1. create proxy services
 	type gRPCService struct {
-		Name       string
-		NodePort   string
-		Port       string
-		TargetPort string
+		Name          string
+		FQServiceName string
+		NodePort      string
+		Port          string
+		TargetPort    string
 	}
 	svcs := bytes.NewBufferString("")
 
 	for _, deploy := range deploys {
 		s := gRPCService{
 			deploy,
+			"yages.Echo",
 			"30000",
 			"9000",
 			"9000",
@@ -109,7 +110,14 @@ func find(namespace, label string) ([]string, error) {
 	if err != nil {
 		return res, err
 	}
-	fmt.Printf("RAW: [%v]", deploys)
+	// fmt.Printf("RAW: [%v] \n", deploys)
 	res = strings.Split(deploys, "\n")
 	return res, nil
 }
+
+// getconf queries the annotation of a deployment
+// to get nodePort, port, targetPort, and the
+/// fully qualified service name in the form package.Service
+// func getconf(deploy string) (string, error) {
+
+// }

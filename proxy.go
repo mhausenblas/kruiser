@@ -12,8 +12,8 @@ metadata:
       kind: Mapping
       name: map-{{.Name}}
       grpc: true
-      prefix: /helloworld.Greeter/
-      rewrite: /helloworld.Greeter/
+      prefix: /{{.FQServiceName}}/
+      rewrite: /{{.FQServiceName}}/
       service: {{.Name}}:{{.Port}}
 spec:
   type: NodePort
