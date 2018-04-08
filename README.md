@@ -3,7 +3,7 @@
 A proxy that transparently exposes gRPC Kubernetes services cluster-externally.
 
 Using [Ambassador](https://www.getambassador.io/) as gRPC proxy, `kruiser` 
-watches services labelled with `grpc=expose` and proxies them to the public using a service of type NodePort on ports from `31000` upwards.
+watches deployment in a target namespace that are labelled with `grpc=expose`. When it finds such a deployment, it creates a corresponding service—of type `NodePort` on ports from `31000` upwards—that proxies traffic to its pods from outside the cluster.
 
 ![architecture](img/kruiser-arch.png)
 
