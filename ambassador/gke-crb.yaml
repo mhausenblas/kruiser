@@ -9,5 +9,5 @@ roleRef:
 subjects:
 - apiGroup: rbac.authorization.k8s.io
   kind: User
-  name: Michael.Hausenblas@gmail.com
+  name: __USER__
   namespace: kruiser
