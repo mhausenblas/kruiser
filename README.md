@@ -3,7 +3,7 @@
 A proxy that transparently exposes gRPC Kubernetes services cluster-externally.
 
 Using [Ambassador](https://www.getambassador.io/) as gRPC proxy, `kruiser` 
-watches deployment in a target namespace that are labelled with `grpc=expose`. When it finds such a deployment, it creates a corresponding service—of type `NodePort` on ports from `31000` upwards—that proxies traffic to its pods from outside the cluster.
+watches deployment in a target namespace that are labelled with `grpc=expose`. When it finds such a deployment, it creates a corresponding service of type `NodePort` proxying traffic to its pods from outside the cluster.
 
 So far, I've tested `kruiser` on Minikube v0.24 with Kubernetes v1.8 and v1.9, as well as on GKE with Kubernetes v1.9 with and without RBAC.
 
@@ -40,6 +40,7 @@ Creating a namespaces for related apps rather than dumping all into the `default
 
 ```bash
 $ kubectl create namespace kruiser
+$ go install .
 ```
 
 ## Use
@@ -55,13 +56,22 @@ As a generic gRPC client we use [fullstorydev/grpcurl](https://github.com/fullst
 
 ### Expose deployment
 
-To expose a deployment, that is, creating an Ambassador-backed service proxying traffic to its pods from outside the cluster, label it with `grpc=expose`. For example:
+To expose a deployment, that is, creating an Ambassador-backed service proxying traffic to its pods from outside the cluster with `kruiser` you have to do two things: 1. define the gRPC service semantics, and 2. enable/disable the proxying.
+
+Define the gRPC service semantics on the deployment you want to expose like so:
 
 ```bash
-$ kubectl -n kruiser label deploy/ping grpc=expose
+$ kubectl -n kruiser annotate deploy/ping kruiser.kubernetes.sh/container-port='9000'
+$ kubectl -n kruiser annotate deploy/ping kruiser.kubernetes.sh/fq-service-name='yages.Echo'
 ```
 
-Note: use `kubectl -n kruiser label deploy/ping grpc-` to remove the label again.
+And now, in order to trigger the service proxy to be created, label the deployment with `kruiser.kubernetes.sh/grpc=expose`, for example:
+
+```bash
+$ kubectl -n kruiser label deploy/ping kruiser.kubernetes.sh/grpc=expose
+```
+
+Note: use `kubectl -n kruiser label deploy/ping kruiser.kubernetes.sh/grpc-` to remove the label again.
 
 ### Walkthroughs
 

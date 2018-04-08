@@ -18,9 +18,8 @@ metadata:
 spec:
   type: NodePort
   ports:
-  - nodePort: {{.NodePort}}
-    port: {{.Port}}
-    targetPort: {{.TargetPort}}
+  - port: {{.Port}}
+    targetPort: {{.Port}}
   selector:
     app: {{.Name}}
 `

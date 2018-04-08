@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"html/template"
+	"io/ioutil"
 	"os"
 	"strings"
 	"time"
@@ -14,7 +15,7 @@ var (
 	// if KRUISER_TARGET_NAMESPACE not set, watch default namespace:
 	targetns = "default"
 	// if KRUISER_TARGET_LABEL not set, watch for label grpc=expose:
-	targetlabel = "grpc=expose"
+	targetlabel = "kruiser.kubernetes.sh/grpc=expose"
 	// checking for gRPC services every 5 sec:
 	wdelay = time.Duration(5) * time.Second
 )
@@ -60,19 +61,18 @@ func proxy(namespace string, deploys []string) error {
 	type gRPCService struct {
 		Name          string
 		FQServiceName string
-		NodePort      string
 		Port          string
-		TargetPort    string
 	}
 	svcs := bytes.NewBufferString("")
-
 	for _, deploy := range deploys {
+		cport, fqsvcname, err := getconf(namespace, deploy)
+		if err != nil {
+			return err
+		}
 		s := gRPCService{
 			deploy,
-			"yages.Echo",
-			"30000",
-			"9000",
-			"9000",
+			fqsvcname,
+			cport,
 		}
 		tmpl, err := template.New("service").Parse(proxy_template)
 		if err != nil {
@@ -83,17 +83,31 @@ func proxy(namespace string, deploys []string) error {
 			return err
 		}
 	}
-	// 2. write out to tpm file:
+
+	// 2. write out to tmp file:
+	tmpfile, err := ioutil.TempFile("", "kruiser")
+	if err != nil {
+		return err
+	}
+	// defer os.Remove(tmpfile.Name())
+	_, err = tmpfile.Write(svcs.Bytes())
+	if err != nil {
+		return err
+	}
+	err = tmpfile.Close()
+	if err != nil {
+		return err
+	}
 	fmt.Printf("%v", svcs.String())
 
 	// 3. apply tmp file containing service proxies:
-	// res, err := kubectl(true, "apply",
-	// 	"--namespace="+namespace,
-	// 	"-f="+tmpsvcproxies)
-	// if err != nil {
-	// 	return err
-	// }
-	// fmt.Printf("%v", res)
+	res, err := kubectl(true, "apply",
+		"--namespace="+namespace,
+		"-f="+tmpfile.Name())
+	if err != nil {
+		return err
+	}
+	fmt.Printf("%v", res)
 	return nil
 }
 
@@ -116,8 +130,26 @@ func find(namespace, label string) ([]string, error) {
 }
 
 // getconf queries the annotation of a deployment
-// to get nodePort, port, targetPort, and the
-/// fully qualified service name in the form package.Service
-// func getconf(deploy string) (string, error) {
-
-// }
+// to get the container port and the fully qualified
+// service name in the form package.Service
+func getconf(namespace, deploy string) (cport, fqsvcname string, err error) {
+	annotations, err := kubectl(true, "get",
+		"--namespace="+namespace, "deploy/"+deploy,
+		"-o=custom-columns=:metadata.annotations",
+		"--no-headers")
+	if err != nil {
+		return "", "", err
+	}
+	arows := strings.TrimPrefix(annotations, "map[")
+	arows = strings.TrimSuffix(arows, "]")
+	alist := strings.Split(arows, " ")
+	for _, annotation := range alist {
+		if strings.HasPrefix(annotation, "kruiser.kubernetes.sh/container-port") {
+			cport = strings.Split(annotation, ":")[1]
+		}
+		if strings.HasPrefix(annotation, "kruiser.kubernetes.sh/fq-service-name") {
+			fqsvcname = strings.Split(annotation, ":")[1]
+		}
+	}
+	return cport, fqsvcname, nil
+}
