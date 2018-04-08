@@ -10,19 +10,11 @@ metadata:
       ---
       apiVersion: ambassador/v0
       kind: Mapping
-      name: map-gs-grpcreflect
-      grpc: true
-      prefix: /grpc.
-      rewrite: /grpc.
-      service: gs:50051
-      ---
-      apiVersion: ambassador/v0
-      kind: Mapping
       name: map-gs
       grpc: true
       prefix: /helloworld.Greeter/
       rewrite: /helloworld.Greeter/
-      service: gs:9001
+      service: gs-proxy:9001
       # ---
       # apiVersion: ambassador/v0
       # kind: Mapping
@@ -36,6 +28,6 @@ spec:
   ports:
   - nodePort: 32123
     port: 9001
-    targetPort: 9001
+    targetPort: 50051
   selector:
     app: gs
