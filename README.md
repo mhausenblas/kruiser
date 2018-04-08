@@ -9,15 +9,11 @@ watches services labelled with `grpc=expose` and proxies them to the public usin
 
 Note: so far tested on Minikube v0.24 and v0.25 with Kubernetes v1.8 and v1.9 as well as on GKE with Kubernetes v1.9.
 
-- [Use cases](#use-cases)
-    - [UC1: inter-cluster within the enterprise](#uc1-inter-cluster-within-the-enterprise)
-    - [UC2: public services](#uc2-public-services)
-- [Install](#install)
-- [Use](#use)
+
 
 ## Use cases
 
-There are two
+There are two main use cases:
 
 ### UC1: inter-cluster within the enterprise
 
@@ -37,17 +33,18 @@ $ kubectl create namespace kruiser
 
 ### Example gRPC demo services
 
-The two example gRPC demo services used below here are:
+The two example gRPC [demo services/](demo-services/) used below here are:
 
 - A simple echo service [yages.Echo](https://github.com/mhausenblas/yages/blob/master/main.go) available via `quay.io/mhausenblas/yages:0.1.0`
 - The reference [helloworld.Greeter](https://github.com/grpc/grpc-go/blob/master/examples/helloworld/greeter_server/main.go) available via `quay.io/mhausenblas/grpc-gs:0.2`
 
 As a generic gRPC client we use [fullstorydev/grpcurl](https://github.com/fullstorydev/grpcurl) which you can either install locally, if you have Go installed, or as a container via the [quay.io/mhausenblas/gump:0.1](https://quay.io/repository/mhausenblas/gump?tag=0.1&tab=tags) container image.
 
-In the following, I'll walk you through how you can use the templates in [static/](static/) to set up `kruiser` in a static manner, that is, manually exposing gRPC services cluster-externally. Along the way I explain how `kruiser` works.
 
+### Walkthroughs
 
-### Walk-throughs
+In the following, I'll walk you through how you can use `kruiser` in a static manner, that is, manually exposing gRPC services cluster-externally. Along the way I explain how `kruiser` works.
+
 
 ```bash
 $ kubectl create namespace kruiser
@@ -56,8 +53,8 @@ $ kubectl create namespace kruiser
 #### Minikube 
 
 ```bash
-$ kubectl -n kruiser apply -f static/ambassador-admin.yaml
-$ kubectl -n kruiser apply -f static/ping.yaml,static/gs.yaml
+$ kubectl -n kruiser apply -f ambassador/admin.yaml
+$ kubectl -n kruiser apply -f demo-services/
 $ grpcurl --plaintext $(minikube ip):32123 helloworld.Greeter.SayHello
 ```
 
@@ -76,11 +73,11 @@ Note that the GKE deployment uses RBAC.
 
 ```bash
 $ gcloud projects get-iam-policy $PROJECT_ID
-$ kubectl apply -f static/ambassador-gke-crb.yaml
+$ kubectl apply -f ambassador/gke-crb.yaml
 $ kubectl describe clusterrolebinding makesmeclusteradmin
 
-$ kubectl -n kruiser apply -f static/ambassador-admin-rbac.yaml
-$ kubectl -n kruiser apply -f static/ping.yaml,static/gs.yaml
+$ kubectl -n kruiser apply -f ambassador/admin-rbac.yaml
+$ kubectl -n kruiser apply -f demo-services/
 $ grpcurl --plaintext $(minikube ip):32123 helloworld.Greeter.SayHello
 ```
 
