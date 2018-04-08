@@ -32,78 +32,84 @@ func init() {
 }
 
 func main() {
-	fmt.Printf("This is kruiser watching namespace %v for gRPC services to publish\n", targetns)
+	fmt.Printf("This is kruiser watching namespace %v for deployments labelled with %v so that I can publish services to proxy gRPC traffic\n", targetns, targetlabel)
 	for {
-		svcs, err := findServices(targetns, targetlabel)
+		deploys, err := find(targetns, targetlabel)
 		if err != nil {
-			fmt.Errorf("Can't list services in namespace %v due to %v\n", targetns, err)
+			fmt.Errorf("Can't list deployments in namespace %v due to %v\n", targetns, err)
 		}
-		fmt.Printf("Found gRPC services %v\n", svcs)
-		err = createProxies(svcs)
-		if err != nil {
-			fmt.Errorf("Can't create proxies due to %v\n", err)
-		}
+		fmt.Printf("deployments: %v deployments length: %d\n", deploys, len(deploys))
+		// switch {
+		// case len(deploys) == 0:
+		// 	fmt.Printf("Didn't find any deployments to proxy\n")
+		// default:
+		// 	fmt.Printf("Found deployments %v to create gRPC proxies for\n", deploys)
+		// 	err = proxy(targetns, deploys)
+		// 	if err != nil {
+		// 		fmt.Errorf("Can't create gRPC proxies due to %v\n", err)
+		// 	}
+		// }
 		time.Sleep(wdelay)
 	}
 }
 
-func createProxies(svcs []string) error {
+// proxy takes a list of deployment names
+// and creates an Ambassador-backed service
+// for each that proxies traffic to its pods.
+func proxy(namespace string, deploys []string) error {
+	// 1. create proxy services
 	type gRPCService struct {
-		Name string
-		Port string
+		Name       string
+		NodePort   string
+		Port       string
+		TargetPort string
 	}
-	// 1. create a location per service
-	servert := `|
-	server {
-	  listen 8080 http2;
+	svcs := bytes.NewBufferString("")
 
-	  access_log /dev/stdout;
-	  error_log /dev/stderr warn;
-
-	  _LOCATIONS_
-	}
-	`
-	locations := bytes.NewBufferString("")
-
-	for _, svc := range svcs {
-		s := gRPCService{svc, "9000"}
-		tmpl, err := template.New("service").Parse(`
-			location /{{.Name}} {
-        		grpc_pass grpc://{{.Name}}:{{.Port}};
-    		}
-    	`)
+	for _, deploy := range deploys {
+		s := gRPCService{
+			deploy,
+			"30000",
+			"9000",
+			"9000",
+		}
+		tmpl, err := template.New("service").Parse(proxy_template)
 		if err != nil {
 			return err
 		}
-
-		err = tmpl.Execute(locations, s)
+		err = tmpl.Execute(svcs, s)
 		if err != nil {
 			return err
 		}
 	}
+	// 2. write out to tpm file:
+	fmt.Printf("%v", svcs.String())
 
-	servert = strings.Replace(servert, "_LOCATIONS_", locations.String(), -1)
-
-	// 2. create a ConfigMap nginxconf
-	//
-	// todo: write to tmp file and use --from-file=path/to/bar
-	fmt.Println(strings.Replace("kubectl --namespace=kruiser create configmap nginxconf --from-literal=config=_SERVERTEMPLATE_",
-		"_SERVERTEMPLATE_", servert, -1))
-
-	// 3. re-deploy kruiser with ConfigMap
+	// 3. apply tmp file containing service proxies:
+	// res, err := kubectl(true, "apply",
+	// 	"--namespace="+namespace,
+	// 	"-f="+tmpsvcproxies)
+	// if err != nil {
+	// 	return err
+	// }
+	// fmt.Printf("%v", res)
 	return nil
 }
 
-func findServices(namespace, label string) ([]string, error) {
+// find queries the given Kubernetes namespace
+// for deployments with the given label and
+// returns a list of matching deployment names.
+func find(namespace, label string) ([]string, error) {
 	var res []string
-	svcs, err := kubectl(true, "get",
-		"--namespace="+namespace, "svc",
+	deploys, err := kubectl(true, "get",
+		"--namespace="+namespace, "deploy",
 		"--selector="+label,
 		"-o=custom-columns=:metadata.name",
 		"--no-headers")
 	if err != nil {
 		return res, err
 	}
-	res = strings.Split(svcs, "\n")
+	fmt.Printf("RAW: [%v]", deploys)
+	res = strings.Split(deploys, "\n")
 	return res, nil
 }

@@ -13,6 +13,7 @@ So far, I've tested `kruiser` on Minikube v0.24 with Kubernetes v1.8 and v1.9, a
 - [Install](#install)
 - [Use](#use)
   - [Example gRPC demo services](#example-grpc-demo-services)
+  - [Expose deployment](#expose-deployment)
   - [Walkthroughs](#walkthroughs)
     - [Minikube](#minikube)
     - [GKE](#gke)
@@ -52,6 +53,15 @@ The two example gRPC [demo services](demo-services/) used below are:
 
 As a generic gRPC client we use [fullstorydev/grpcurl](https://github.com/fullstorydev/grpcurl) which you can either install locally, if you have Go installed, or as a container via the [quay.io/mhausenblas/gump:0.1](https://quay.io/repository/mhausenblas/gump?tag=0.1&tab=tags) container image.
 
+### Expose deployment
+
+To expose a deployment, that is, creating an Ambassador-backed service proxying traffic to its pods from outside the cluster, label it with `grpc=expose`. For example:
+
+```bash
+$ kubectl -n kruiser label deploy/ping grpc=expose
+```
+
+Note: use `kubectl -n kruiser label deploy/ping grpc-` to remove the label again.
 
 ### Walkthroughs
 
