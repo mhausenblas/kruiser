@@ -7,9 +7,18 @@ watches services labelled with `grpc=expose` and proxies them to the public usin
 
 ![architecture](img/kruiser-arch.png)
 
-Note: so far tested on Minikube v0.24 and v0.25 with Kubernetes v1.8 and v1.9 as well as on GKE with Kubernetes v1.9.
+So far, I've tested `kruiser` on Minikube v0.24 with Kubernetes v1.8 and v1.9, as well as on GKE with Kubernetes v1.9 with and without RBAC.
 
-
+- [Use cases](#use-cases)
+  - [UC1: inter-cluster within the enterprise](#uc1-inter-cluster-within-the-enterprise)
+  - [UC2: public services](#uc2-public-services)
+- [Install](#install)
+- [Use](#use)
+  - [Example gRPC demo services](#example-grpc-demo-services)
+  - [Walkthroughs](#walkthroughs)
+    - [Minikube](#minikube)
+    - [GKE](#gke)
+    - [Cleanup](#cleanup)
 
 ## Use cases
 
@@ -17,7 +26,12 @@ There are two main use cases:
 
 ### UC1: inter-cluster within the enterprise
 
+Imagine two or more clusters deployed within, say, a data center in an enterprise. In order for gRPC services to communicate across clusters, you need to proxy the traffic from one cluster to another.
+
 ### UC2: public services
+
+If you want to make your gRPC service publicly available, you need to somehow expose it, routing traffic from outside the cluster to the cluster-internal service.
+
 
 ## Install 
 
@@ -52,33 +66,74 @@ $ kubectl create namespace kruiser
 
 #### Minikube 
 
+First, install Ambassador with:
+
 ```bash
 $ kubectl -n kruiser apply -f ambassador/admin.yaml
-$ kubectl -n kruiser apply -f demo-services/
-$ grpcurl --plaintext $(minikube ip):32123 helloworld.Greeter.SayHello
 ```
 
-Alternatively, access a gRPC services via the gRPC jump pod like so:
+Next, deploy the two gRPC demo services:
 
 ```bash
-$ kubectl -n kruiser run -it --rm gumpod --restart=Never \
-                             --image=quay.io/mhausenblas/gump:0.1
+$ kubectl -n kruiser apply -f demo-services/
+```
+
+Now you can invoke each of the gRPC demo services from outside Minikube like so:
+
+```bash
+$ grpcurl --plaintext $(minikube ip):31001 yages.Echo.Ping
+
+$ grpcurl --plaintext  -d '{ "name" : "Michael" }' $(minikube ip):31000 helloworld.Greeter.SayHello
+```
+
+Alternatively, you can access one of the gRPC services via the gRPC jump pod like so:
+
+```bash
+$ kubectl -n kruiser run -it --rm gumpod \
+          --restart=Never --image=quay.io/mhausenblas/gump:0.1
 
 /go $ grpcurl --plaintext ping:9000 yages.Echo.Ping
 ```
 
 #### GKE
 
-Note that the GKE deployment uses RBAC.
+Note that the GKE deployment in the following uses RBAC for access control.
+
+As a preparation, you need to give your user certain rights.
 
 ```bash
-$ gcloud projects get-iam-policy $PROJECT_ID
-$ kubectl apply -f ambassador/gke-crb.yaml
-$ kubectl describe clusterrolebinding makesmeclusteradmin
+$ cat ambassador/gke-crb.yaml | \
+  sed s/__USER__/$(gcloud projects get-iam-policy $(gcloud config get-value core/project) | grep -m 1 user | awk '{split($0,u,":"); print u[2]}')/g | \
+  kubectl -n kruiser apply -f -
+```
 
+Above, we replace the `__USER__` placeholder in `ambassador/gke-crb.yaml` with the value of the user name of the active GKE project before creating the respective cluster-role binding.
+
+Next, install Ambassador with:
+
+```bash
 $ kubectl -n kruiser apply -f ambassador/admin-rbac.yaml
+```
+
+And now deploy the two gRPC demo services:
+
+```bash
 $ kubectl -n kruiser apply -f demo-services/
-$ grpcurl --plaintext $(minikube ip):32123 helloworld.Greeter.SayHello
+```
+
+To be able to access the services from outside the GKE cluster we first have to find values for external IPs of cluster nodes (store them for example in an env var `NODE_IP`):
+
+```bash
+$ kubectl get nodes --selector=kubernetes.io/role!=master \ 
+                    -o jsonpath={.items[*].status.addresses[?\(@.type==\"ExternalIP\"\)].address}
+```
+
+Now, finally, you can invoke each of the gRPC demo services from outside the GKE cluster like so: 
+
+```bash
+$ grpcurl --plaintext $(NODE_IP):31001 yages.Echo.Ping
+
+$ grpcurl --plaintext  -d '{ "name" : "Michael" }' $(NODE_IP):31000 helloworld.Greeter.SayHello
 ```
 
 #### Cleanup
