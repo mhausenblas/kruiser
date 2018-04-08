@@ -1,10 +1,7 @@
----
 apiVersion: v1
 kind: Service
 metadata:
-  labels:
-    app: ambassador
-  name: gs-proxy
+  name: gs
   annotations:
     getambassador.io/config: |
       ---
@@ -14,19 +11,11 @@ metadata:
       grpc: true
       prefix: /helloworld.Greeter/
       rewrite: /helloworld.Greeter/
-      service: gs-proxy:9001
-      # ---
-      # apiVersion: ambassador/v0
-      # kind: Mapping
-      # name: map-ping
-      # grpc: true
-      # prefix: /yages.Echo/
-      # rewrite: /yages.Echo/
-      # service: ping:9000
+      service: gs:9001
 spec:
   type: NodePort
   ports:
-  - nodePort: 32123
+  - nodeport: 31000
     port: 9001
     targetPort: 50051
   selector:

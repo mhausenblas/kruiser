@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: ping
+  annotations:
+    getambassador.io/config: |
+      ---
+      apiVersion: ambassador/v0
+      kind: Mapping
+      name: map-ping
+      grpc: true
+      prefix: /yages.Echo/
+      rewrite: /yages.Echo/
+      service: ping:9000
+spec:
+  type: NodePort
+  ports:
+  - nodeport: 31001
+    port: 9000
+    targetPort: 9000
+  selector:
+    app: ping

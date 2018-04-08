@@ -1,8 +1,6 @@
 apiVersion: apps/v1beta1
 kind: Deployment
 metadata:
-  labels:
-    app: yages
   name: ping
 spec:
   replicas: 1
@@ -17,17 +15,3 @@ spec:
         ports:
         - containerPort: 9000
           protocol: TCP
----
-apiVersion: v1
-kind: Service
-metadata:
-  labels:
-    app: yages
-  name: ping
-spec:
-  type: ClusterIP
-  ports:
-  - port: 9000
-    targetPort: 9000
-  selector:
-    app: ping
