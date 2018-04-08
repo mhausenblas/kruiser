@@ -5,8 +5,6 @@ A proxy that transparently exposes gRPC Kubernetes services cluster-externally.
 Using [Ambassador](https://www.getambassador.io/) as gRPC proxy, `kruiser` 
 watches deployment in a target namespace that are labelled with `grpc=expose`. When it finds such a deployment, it creates a corresponding service—of type `NodePort` on ports from `31000` upwards—that proxies traffic to its pods from outside the cluster.
 
-![architecture](img/kruiser-arch.png)
-
 So far, I've tested `kruiser` on Minikube v0.24 with Kubernetes v1.8 and v1.9, as well as on GKE with Kubernetes v1.9 with and without RBAC.
 
 - [Use cases](#use-cases)
